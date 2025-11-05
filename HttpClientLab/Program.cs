@@ -13,25 +13,7 @@ var refitSettings = new RefitSettings
     })
 };
 
-static IAsyncPolicy<HttpResponseMessage> Timeout() =>
-    Policy.TimeoutAsync<HttpResponseMessage>(10);
-
-static IAsyncPolicy<HttpResponseMessage> Retry() =>
-    HttpPolicyExtensions.HandleTransientHttpError()
-    .OrResult(r => (int)r.StatusCode == 429)
-    .WaitAndRetryAsync(3, attempt => TimeSpan.FromMilliseconds(200 * attempt));
-
-builder.Services
-    .AddRefitClient<IGitHubApi>(refitSettings)
-    .ConfigureHttpClient(c =>
-    {
-        c.BaseAddress = new Uri("https://api.github.com");
-        c.DefaultRequestHeaders.UserAgent.ParseAdd("HttpClientLab/1.0");
-        c.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
-        c.Timeout = TimeSpan.FromSeconds(30);
-    })
-    .AddPolicyHandler(Timeout())
-    .AddPolicyHandler(Retry());
+builder.Services.AddGitHubClient(refitSettings);
 
 var app = builder.Build();
 
